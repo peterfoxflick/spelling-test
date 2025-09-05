@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spelling Test</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .setup-screen {
+            display: block;
+        }
+
+        .test-screen, .results-screen {
+            display: none;
+        }
+
+        .word-list-container {
+            margin-bottom: 30px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .progress {
+            background: #f0f0f0;
+            border-radius: 10px;
+            height: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .question-counter {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .current-word-display {
+            font-size: 24px;
+            color: #333;
+            margin: 20px 0;
+            min-height: 30px;
+        }
+
+        .spelling-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+            transition: border-color 0.3s ease;
+        }
+
+        .spelling-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .audio-controls {
+            margin: 20px 0;
+        }
+
+        .play-button {
+            background: #4CAF50;
+            font-size: 16px;
+            padding: 12px 25px;
+        }
+
+        .play-button:hover {
+            background: #45a049;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .results-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        .results-table tr:hover {
+            background: #f8f9ff;
+        }
+
+        .correct {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .incorrect {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .score-display {
+            font-size: 2em;
+            margin: 20px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+        }
+
+        .instructions {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .spelling-input {
+                font-size: 18px;
+            }
+            
+            .results-table {
+                font-size: 14px;
+            }
+            
+            .results-table th,
+            .results-table td {
+                padding: 10px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Setup Screen -->
+        <div class="setup-screen" id="setupScreen">
+            <h1>🎯 Spelling Test</h1>
+            <div class="instructions">
+                <h3>Instructions:</h3>
+                <p>Enter words in the text area below (one per line). The test will play each word's pronunciation, and you'll need to spell it correctly. Click "Start Test" when ready!</p>
+            </div>
+            <div class="word-list-container">
+                <textarea id="wordListInput" placeholder="Enter words here, one per line:&#10;&#10;example&#10;beautiful&#10;necessary&#10;definitely&#10;separate&#10;occasion&#10;embarrass&#10;privilege&#10;accommodate&#10;rhythm">example
+major
+clay
+stray
+today
+bail
+rail
+drain
+faint
+claim
+pale
+face
+graze
+cane
+slate
+ache
+steak
+break
+eight
+they
+obey
+</textarea>
+            </div>
+            <button class="button" onclick="startTest()">Start Test</button>
+        </div>
+
+        <!-- Test Screen -->
+        <div class="test-screen" id="testScreen">
+            <h1>🎯 Spelling Test</h1>
+            <div class="question-counter" id="questionCounter">Question 1 of 10</div>
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            
+            <div class="current-word-display" id="currentWordDisplay">Listen and spell the word</div>
+            
+            <div class="audio-controls">
+                <button class="button play-button" onclick="playCurrentWord()" id="playButton">🔊 Play Word</button>
+                <button class="button play-button" onclick="playCurrentWord()" style="background: #FF9800;">🔊 Play Again</button>
+            </div>
+            
+            <input type="text" class="spelling-input" id="spellingInput" placeholder="Type your spelling here..." onkeypress="handleEnterKey(event)">
+            
+            <button class="button" onclick="submitAnswer()" id="submitButton">Submit Answer</button>
+        </div>
+
+        <!-- Results Screen -->
+        <div class="results-screen" id="resultsScreen">
+            <h1>📊 Test Results</h1>
+            <div class="score-display" id="scoreDisplay">
+                Your Score: 0/0 (0%)
+            </div>
+            
+            <table class="results-table" id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>Word</th>
+                        <th>Your Answer</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTableBody">
+                </tbody>
+            </table>
+            
+            <button class="button" onclick="restartTest()">Take Another Test</button>
+        </div>
+    </div>
+
+    <script>
+        let wordList = [];
+        let currentWordIndex = 0;
+        let userAnswers = [];
+        let testResults = [];
+
+        function startTest() {
+            const input = document.getElementById('wordListInput').value.trim();
+            if (!input) {
+                alert('Please enter some words for the test!');
+                return;
+            }
+
+            // Parse word list and clean up
+            wordList = input.split('\n')
+                .map(word => word.trim())
+                .filter(word => word.length > 0);
+
+            if (wordList.length === 0) {
+                alert('Please enter at least one word!');
+                return;
+            }
+
+            // Reset test state
+            currentWordIndex = 0;
+            userAnswers = [];
+            testResults = [];
+
+            // Switch to test screen
+            document.getElementById('setupScreen').style.display = 'none';
+            document.getElementById('testScreen').style.display = 'block';
+
+            // Start the first question
+            showCurrentQuestion();
+        }
+
+        function showCurrentQuestion() {
+            const questionCounter = document.getElementById('questionCounter');
+            const progressBar = document.getElementById('progressBar');
+            const spellingInput = document.getElementById('spellingInput');
+
+            // Update UI
+            questionCounter.textContent = `Question ${currentWordIndex + 1} of ${wordList.length}`;
+            const progress = ((currentWordIndex) / wordList.length) * 100;
+            progressBar.style.width = progress + '%';
+
+            // Clear input
+            spellingInput.value = '';
+            spellingInput.focus();
+
+            // Auto-play the word
+            setTimeout(() => {
+                playCurrentWord();
+            }, 500);
+        }
+
+        function playCurrentWord() {
+            const word = wordList[currentWordIndex];
+            
+            // Check if speech synthesis is supported
+            if ('speechSynthesis' in window) {
+                // Cancel any ongoing speech
+                window.speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.rate = 0.7; // Slower rate for spelling tests
+                utterance.volume = 1;
+                utterance.pitch = 1;
+                
+                // Try to use a clear voice
+                const voices = window.speechSynthesis.getVoices();
+                const preferredVoice = voices.find(voice => 
+                    voice.lang.startsWith('en') && voice.name.includes('Google')
+                ) || voices.find(voice => voice.lang.startsWith('en'));
+                
+                if (preferredVoice) {
+                    utterance.voice = preferredVoice;
+                }
+                
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert('Speech synthesis not supported. The word is: ' + word);
+            }
+        }
+
+        function handleEnterKey(event) {
+            if (event.key === 'Enter') {
+                submitAnswer();
+            }
+        }
+
+        function submitAnswer() {
+            const userAnswer = document.getElementById('spellingInput').value.trim();
+            
+            if (!userAnswer) {
+                alert('Please enter your spelling!');
+                return;
+            }
+
+            const correctWord = wordList[currentWordIndex];
+            const isCorrect = userAnswer.toLowerCase() === correctWord.toLowerCase();
+
+            // Store the result
+            testResults.push({
+                word: correctWord,
+                userAnswer: userAnswer,
+                isCorrect: isCorrect
+            });
+
+            // Move to next question or show results
+            currentWordIndex++;
+            
+            if (currentWordIndex < wordList.length) {
+                showCurrentQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            // Switch to results screen
+            document.getElementById('testScreen').style.display = 'none';
+            document.getElementById('resultsScreen').style.display = 'block';
+
+            // Calculate score
+            const correctCount = testResults.filter(result => result.isCorrect).length;
+            const totalCount = testResults.length;
+            const percentage = Math.round((correctCount / totalCount) * 100);
+
+            // Update score display
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            scoreDisplay.textContent = `Your Score: ${correctCount}/${totalCount} (${percentage}%)`;
+
+            // Populate results table
+            const tableBody = document.getElementById('resultsTableBody');
+            tableBody.innerHTML = '';
+
+            testResults.forEach(result => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${result.word}</strong></td>
+                    <td>${result.userAnswer}</td>
+                    <td class="${result.isCorrect ? 'correct' : 'incorrect'}">
+                        ${result.isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function restartTest() {
+            // Reset to setup screen
+            document.getElementById('resultsScreen').style.display = 'none';
+            document.getElementById('setupScreen').style.display = 'block';
+            
+            // Reset progress bar
+            document.getElementById('progressBar').style.width = '0%';
+        }
+
+        // Load voices when they become available
+        window.speechSynthesis.onvoiceschanged = function() {
+            // Voices are now loaded
+        };
+
+        // Auto-focus on input when test screen is shown
+        document.addEventListener('DOMContentLoaded', function() {
+            const spellingInput = document.getElementById('spellingInput');
+            if (spellingInput) {
+                spellingInput.addEventListener('input', function() {
+                    // Enable submit button when there's text
+                    const submitButton = document.getElementById('submitButton');
+                    submitButton.disabled = this.value.trim().length === 0;
+                });
+            }
+        });
+    </script>
+</body>
+</html>
